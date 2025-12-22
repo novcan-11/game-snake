@@ -2,104 +2,104 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Snake Game - Nokia Style</title>
+    <title>Mini Mario Game</title>
     <style>
         body {
-            background: #eaeaea;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            font-family: Arial;
+            margin: 0;
+            background: #87ceeb;
         }
-
         canvas {
-            background: #fff;
-            border: 3px solid #000;
+            display: block;
+            margin: auto;
+            background: #87ceeb;
         }
     </style>
 </head>
 <body>
 
-<canvas id="game" width="400" height="400"></canvas>
+<canvas id="game" width="800" height="400"></canvas>
 
 <script>
-    const canvas = document.getElementById("game");
-    const ctx = canvas.getContext("2d");
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
 
-    const box = 20;
+// Player
+let player = {
+    x: 50,
+    y: 300,
+    width: 30,
+    height: 40,
+    speed: 5,
+    dy: 0,
+    gravity: 0.8,
+    jumpPower: 15,
+    grounded: false
+};
 
-    let snake = [{ x: 200, y: 200 }];
-    let direction = "RIGHT";
+// Ground
+const ground = {
+    x: 0,
+    y: 350,
+    width: 800,
+    height: 50
+};
 
-    let food = {
-        x: Math.floor(Math.random() * 19) * box,
-        y: Math.floor(Math.random() * 19) * box
-    };
+let keys = {};
 
-    let score = 0;
+document.addEventListener("keydown", e => keys[e.code] = true);
+document.addEventListener("keyup", e => keys[e.code] = false);
 
-    document.addEventListener("keydown", changeDirection);
+function update() {
+    // Gerak kiri kanan
+    if (keys["ArrowRight"]) player.x += player.speed;
+    if (keys["ArrowLeft"]) player.x -= player.speed;
 
-    function changeDirection(event) {
-        if (event.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
-        else if (event.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
-        else if (event.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
-        else if (event.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+    // Lompat
+    if (keys["Space"] && player.grounded) {
+        player.dy = -player.jumpPower;
+        player.grounded = false;
     }
 
-    function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Gravitasi
+    player.dy += player.gravity;
+    player.y += player.dy;
 
-        // Food
-        ctx.fillStyle = "red";
-        ctx.fillRect(food.x, food.y, box, box);
-
-        // Snake
-        ctx.fillStyle = "green";
-        for (let i = 0; i < snake.length; i++) {
-            ctx.fillRect(snake[i].x, snake[i].y, box, box);
-        }
-
-        let head = { x: snake[0].x, y: snake[0].y };
-
-        if (direction === "LEFT") head.x -= box;
-        if (direction === "UP") head.y -= box;
-        if (direction === "RIGHT") head.x += box;
-        if (direction === "DOWN") head.y += box;
-
-        // Makan makanan
-        if (head.x === food.x && head.y === food.y) {
-            score++;
-            food = {
-                x: Math.floor(Math.random() * 19) * box,
-                y: Math.floor(Math.random() * 19) * box
-            };
-        } else {
-            snake.pop();
-        }
-
-        // Tabrak dinding / badan
-        if (
-            head.x < 0 ||
-            head.y < 0 ||
-            head.x >= canvas.width ||
-            head.y >= canvas.height ||
-            snake.some(part => part.x === head.x && part.y === head.y)
-        ) {
-            alert("Game Over!\nScore: " + score);
-            location.reload();
-        }
-
-        snake.unshift(head);
-
-        // Score
-        ctx.fillStyle = "black";
-        ctx.font = "16px Arial";
-        ctx.fillText("Score: " + score, 10, 20);
+    // Tabrakan tanah
+    if (player.y + player.height >= ground.y) {
+        player.y = ground.y - player.height;
+        player.dy = 0;
+        player.grounded = true;
     }
 
-    setInterval(draw, 150);
+    // Batas layar
+    if (player.x < 0) player.x = 0;
+    if (player.x + player.width > canvas.width)
+        player.x = canvas.width - player.width;
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Ground
+    ctx.fillStyle = "#654321";
+    ctx.fillRect(ground.x, ground.y, ground.width, ground.height);
+
+    // Player (Mario)
+    ctx.fillStyle = "red";
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+
+    // Kepala
+    ctx.fillStyle = "pink";
+    ctx.fillRect(player.x + 5, player.y - 10, 20, 10);
+}
+
+function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
 </script>
 
 </body>
