@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Snake Game - Nokia Style</title>
+    <style>
+        body {
+            background: #eaeaea;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial;
+        }
+
+        canvas {
+            background: #fff;
+            border: 3px solid #000;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="game" width="400" height="400"></canvas>
+
+<script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+
+    const box = 20;
+
+    let snake = [{ x: 200, y: 200 }];
+    let direction = "RIGHT";
+
+    let food = {
+        x: Math.floor(Math.random() * 19) * box,
+        y: Math.floor(Math.random() * 19) * box
+    };
+
+    let score = 0;
+
+    document.addEventListener("keydown", changeDirection);
+
+    function changeDirection(event) {
+        if (event.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
+        else if (event.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
+        else if (event.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
+        else if (event.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Food
+        ctx.fillStyle = "red";
+        ctx.fillRect(food.x, food.y, box, box);
+
+        // Snake
+        ctx.fillStyle = "green";
+        for (let i = 0; i < snake.length; i++) {
+            ctx.fillRect(snake[i].x, snake[i].y, box, box);
+        }
+
+        let head = { x: snake[0].x, y: snake[0].y };
+
+        if (direction === "LEFT") head.x -= box;
+        if (direction === "UP") head.y -= box;
+        if (direction === "RIGHT") head.x += box;
+        if (direction === "DOWN") head.y += box;
+
+        // Makan makanan
+        if (head.x === food.x && head.y === food.y) {
+            score++;
+            food = {
+                x: Math.floor(Math.random() * 19) * box,
+                y: Math.floor(Math.random() * 19) * box
+            };
+        } else {
+            snake.pop();
+        }
+
+        // Tabrak dinding / badan
+        if (
+            head.x < 0 ||
+            head.y < 0 ||
+            head.x >= canvas.width ||
+            head.y >= canvas.height ||
+            snake.some(part => part.x === head.x && part.y === head.y)
+        ) {
+            alert("Game Over!\nScore: " + score);
+            location.reload();
+        }
+
+        snake.unshift(head);
+
+        // Score
+        ctx.fillStyle = "black";
+        ctx.font = "16px Arial";
+        ctx.fillText("Score: " + score, 10, 20);
+    }
+
+    setInterval(draw, 150);
+</script>
+
+</body>
+</html>
